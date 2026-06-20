@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Split It — Bill Splitter</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --border: #e5e2da;
+    --text: #1a1917;
+    --muted: #7a7873;
+    --accent: #2c6e49;
+    --accent-light: #e8f4ee;
+    --accent-dark: #1a4a30;
+    --danger: #c0392b;
+    --danger-light: #fdecea;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  header .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  header p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .tip-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .tip-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+
+  .tip-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tip-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* People section */
+  .people-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .person-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .person-row input { flex: 1; }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 1rem;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  /* Items section */
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 110px 36px;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  /* Split type toggle */
+  .toggle-group {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .toggle-group button {
+    flex: 1;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .toggle-group button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* Results */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat.highlight .stat-value { color: var(--accent); }
+
+  .person-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+    background: var(--bg);
+  }
+
+  .person-result-name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .person-result-amount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .calc-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1.5rem;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+
+  .calc-btn:hover { background: var(--accent-dark); }
+
+  .error {
+    background: var(--danger-light);
+    border: 1px solid #f5c6c2;
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.85rem;
+    font-size: 13px;
+    color: var(--danger);
+    display: none;
+  }
+
+  .error.show { display: block; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .dh-btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.65rem 1.4rem;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+
+  .dh-btn:hover { background: var(--accent-dark); }
+
+  .credit {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .credit strong { color: var(--text); }
+
+  @media (max-width: 420px) {
+    .row { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Free Tool</div>
+  <h1>Split It 💸</h1>
+  <p>Split any bill between friends — fast, fair, and free.</p>
+</header>
+
+<div class="container">
+
+  <!-- Bill Details -->
+  <div class="card">
+    <div class="card-title">Bill Details</div>
+
+    <div style="margin-bottom: 1rem;">
+      <label>Total Bill Amount (₹)</label>
+      <input type="number" id="totalBill" placeholder="e.g. 1500" min="0" step="any" />
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Tip %</label>
+        <input type="number" id="tipPercent" placeholder="0" min="0" max="100" step="1" value="0" />
+        <div class="tip-row">
+          <button class="tip-btn" onclick="setTip(0)">0%</button>
+          <button class="tip-btn" onclick="setTip(5)">5%</button>
+          <button class="tip-btn" onclick="setTip(10)">10%</button>
+          <button class="tip-btn" onclick="setTip(18)">18%</button>
+        </div>
+      </div>
+      <div>
+        <label>Tax / GST %</label>
+        <input type="number" id="taxPercent" placeholder="0" min="0" max="50" step="any" value="0" />
+        <div class="tip-row">
+          <button class="tip-btn" onclick="setTax(0)">0%</button>
+          <button class="tip-btn" onclick="setTax(5)">5%</button>
+          <button class="tip-btn" onclick="setTax(12)">12%</button>
+          <button class="tip-btn" onclick="setTax(18)">18%</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- People -->
+  <div class="card">
+    <div class="card-title">Who's Splitting?</div>
+    <div class="people-list" id="peopleList"></div>
+    <button class="add-btn" onclick="addPerson()">+ Add person</button>
+  </div>
+
+  <!-- Split Type -->
+  <div class="card">
+    <div class="card-title">Split Type</div>
+    <div class="toggle-group" id="splitToggle">
+      <button class="active" onclick="setSplitType('equal', this)">Equal Split</button>
+      <button onclick="setSplitType('custom', this)">Custom Amounts</button>
+    </div>
+
+    <div id="customSection" style="display:none; margin-top: 1rem;">
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 0.75rem;">Enter each person's share of the base bill (excluding tip/tax):</p>
+      <div id="customAmounts"></div>
+    </div>
+  </div>
+
+  <!-- Calculate -->
+  <div id="errorBox" class="error"></div>
+  <button class="calc-btn" onclick="calculate()">Calculate Split</button>
+
+  <!-- Results -->
+  <div class="card" id="resultsCard" style="display:none;">
+    <div class="card-title">Results</div>
+
+    <div class="summary-grid">
+      <div class="stat">
+        <div class="stat-label">Base Bill</div>
+        <div class="stat-value" id="res-base">₹0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Tip + Tax</div>
+        <div class="stat-value" id="res-extra">₹0</div>
+      </div>
+      <div class="stat highlight">
+        <div class="stat-label">Grand Total</div>
+        <div class="stat-value" id="res-total">₹0</div>
+      </div>
+    </div>
+
+    <div id="personResults"></div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer>
+  <a href="https://digitalheroesco.com" target="_blank" class="dh-btn">Built for Digital Heroes</a>
+  <p class="credit">Made by <strong>Tushar Sanwal</strong> · <strong>sanwaltushar@gmail.com</strong></p>
+</footer>
+
+<script>
+  let people = [];
+  let splitType = 'equal';
+  let tipBtns = document.querySelectorAll('.tip-row .tip-btn');
+
+  function setTip(val) {
+    document.getElementById('tipPercent').value = val;
+    document.querySelectorAll('#tipPercent ~ .tip-row .tip-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.textContent) === val);
+    });
+  }
+
+  function setTax(val) {
+    document.getElementById('taxPercent').value = val;
+    document.querySelectorAll('#taxPercent ~ .tip-row .tip-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.textContent) === val);
+    });
+  }
+
+  function setSplitType(type, btn) {
+    splitType = type;
+    document.querySelectorAll('#splitToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('customSection').style.display = type === 'custom' ? 'block' : 'none';
+    if (type === 'custom') renderCustomAmounts();
+  }
+
+  function addPerson(name = '') {
+    people.push({ name: name || `Person ${people.length + 1}` });
+    renderPeople();
+    if (splitType === 'custom') renderCustomAmounts();
+  }
+
+  function removePerson(i) {
+    people.splice(i, 1);
+    renderPeople();
+    if (splitType === 'custom') renderCustomAmounts();
+  }
+
+  function renderPeople() {
+    const list = document.getElementById('peopleList');
+    list.innerHTML = '';
+    people.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'person-row';
+      row.innerHTML = `
+        <input type="text" value="${p.name}" placeholder="Person ${i+1}" oninput="people[${i}].name = this.value; if(splitType==='custom') renderCustomAmounts()" />
+        <button class="icon-btn" onclick="removePerson(${i})" title="Remove">✕</button>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function renderCustomAmounts() {
+    const div = document.getElementById('customAmounts');
+    div.innerHTML = '';
+    people.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.style.gridTemplateColumns = '1fr 120px';
+      row.innerHTML = `
+        <label style="margin:0; display:flex; align-items:center; font-size:14px; color:var(--text); font-weight:500;">${p.name || 'Person ' + (i+1)}</label>
+        <input type="number" id="custom-${i}" placeholder="₹0" min="0" step="any" />
+      `;
+      div.appendChild(row);
+    });
+  }
+
+  function fmt(n) {
+    return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('show');
+  }
+
+  function clearError() {
+    document.getElementById('errorBox').classList.remove('show');
+  }
+
+  function calculate() {
+    clearError();
+    const base = parseFloat(document.getElementById('totalBill').value);
+    const tip = parseFloat(document.getElementById('tipPercent').value) || 0;
+    const tax = parseFloat(document.getElementById('taxPercent').value) || 0;
+
+    if (!base || base <= 0) { showError('Please enter a valid total bill amount.'); return; }
+    if (people.length < 2) { showError('Add at least 2 people to split the bill.'); return; }
+
+    const tipAmt = base * (tip / 100);
+    const taxAmt = base * (tax / 100);
+    const grandTotal = base + tipAmt + taxAmt;
+    const extraRatio = grandTotal / base;
+
+    let shares = [];
+
+    if (splitType === 'equal') {
+      const each = grandTotal / people.length;
+      shares = people.map((p, i) => ({ name: p.name || 'Person ' + (i+1), amount: each }));
+    } else {
+      let customTotal = 0;
+      const customVals = people.map((_, i) => {
+        const v = parseFloat(document.getElementById('custom-' + i)?.value) || 0;
+        customTotal += v;
+        return v;
+      });
+
+      if (Math.abs(customTotal - base) > 0.5) {
+        showError(`Custom amounts (₹${customTotal.toFixed(2)}) don't match bill total (₹${base.toFixed(2)}). Please adjust.`);
+        return;
+      }
+
+      shares = people.map((p, i) => ({
+        name: p.name || 'Person ' + (i+1),
+        amount: customVals[i] * extraRatio
+      }));
+    }
+
+    document.getElementById('res-base').textContent = fmt(base);
+    document.getElementById('res-extra').textContent = fmt(tipAmt + taxAmt);
+    document.getElementById('res-total').textContent = fmt(grandTotal);
+
+    const resultsDiv = document.getElementById('personResults');
+    resultsDiv.innerHTML = '';
+    shares.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'person-result';
+      row.innerHTML = `
+        <span class="person-result-name">${s.name}</span>
+        <span class="person-result-amount">${fmt(s.amount)}</span>
+      `;
+      resultsDiv.appendChild(row);
+    });
+
+    document.getElementById('resultsCard').style.display = 'block';
+    document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Init with 2 people
+  addPerson('You');
+  addPerson('Friend');
+</script>
+</body>
+</html>
